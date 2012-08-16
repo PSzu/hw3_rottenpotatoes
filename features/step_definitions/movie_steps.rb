@@ -4,7 +4,6 @@ Given /the following movies exist/ do |movies_table|
   movies_table.hashes.each do |movie|
     Movie.create!(movie)
   end
-  #flunk "Unimplemented"
 end
 
 # Make sure that one string (regexp) occurs before or after another one
@@ -24,4 +23,26 @@ When /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
   # HINT: use String#split to split up the rating_list, then
   #   iterate over the ratings and reuse the "When I check..." or
   #   "When I uncheck..." steps in lines 89-95 of web_steps.rb
+  is_checked = uncheck.nil?
+  ratings = rating_list.split(",")
+  ratings.each do |r|
+    if true & is_checked
+      step %Q{I check "ratings_#{r}"}
+    else
+      step %Q{I uncheck "ratings_#{r}"}
+    end
+  end
 end
+
+When /^I press: (.*)$/ do |pressed_button|
+  step %Q{I press "#{pressed_button}"}
+end
+
+Then /^I should see movies with ratings: (.*)$/ do |rating_list|
+  pending # express the regexp above with the code you wish you had
+end
+
+Then /^I should not see movies with rating: (.*)$/ do |rating_list|
+  pending # express the regexp above with the code you wish you had
+end
+
