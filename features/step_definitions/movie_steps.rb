@@ -10,9 +10,9 @@ end
 #   on the same page
 
 Then /I should see "(.*)" before "(.*)"/ do |e1, e2|
-  #  ensure that that e1 occurs before e2.
-  #  page.content  is the entire content of the page as a string.
-  flunk "Unimplemented"
+  body = page.body
+  puts body
+
 end
 
 # Make it easier to express checking or unchecking several boxes at once
@@ -39,10 +39,61 @@ When /^I press: (.*)$/ do |pressed_button|
 end
 
 Then /^I should see movies with ratings: (.*)$/ do |rating_list|
-  pending # express the regexp above with the code you wish you had
+  ratings = page.all("table#movies tbody#movielist tr td[2]").map { |r| r.text }
+  rating_list.split(",").each do |r|
+    assert ratings.include?(r.strip)
+  end
 end
 
 Then /^I should not see movies with rating: (.*)$/ do |rating_list|
-  pending # express the regexp above with the code you wish you had
+  ratings = page.all("table#movies tbody#movielist tr td[2]").map { |r| r.text}
+  rating_list.split(",").each do |r|
+    assert !ratings.include?(r.strip)
+  end
 end
 
+Given /^I selected no ratings$/ do
+  all_ratings = Movie.find(:all, :select => 'distinct rating').map(&:rating)
+  all_ratings.each do |r|
+    step %Q{I uncheck "ratings_#{r}"}
+  end
+end
+
+Then /^I should see none of the movies$/ do
+  titles = page.all("table#movies tbody#movielist tr td[1]").map { |r| r.text }
+  assert titles.size == 0
+end
+
+Given /^I selected all ratings$/ do
+  all_ratings = Movie.find(:all, :select => 'distinct rating').map(&:rating)
+  all_ratings.each do |r|
+    step %Q{I check "ratings_#{r}"}
+  end
+end
+
+Then /^I should see all of the movies$/ do
+  titles = page.all("table#movies tbody#movielist tr td[1]").map { |r| r.text }
+  assert titles.size == Movie.all.count
+end
+
+Then /^I should see movies sorted by title$/ do
+  displayed_titles = page.all("table#movies tbody#movielist tr td[1]").map { |r| r.text }
+  cnt = 0
+  displayed_titles.each do |title|
+    if title != displayed_titles.last
+      assert title < displayed_titles[cnt+1]
+      cnt += 1
+    end
+  end
+end
+
+Then /^I should see movies sorted by release date$/ do
+  displayed_dates = page.all("table#movies tbody#movielist tr td[3]").map { |r| r.text }
+  cnt = 0
+  displayed_dates.each do |title|
+    if title != displayed_dates.last
+      assert title < displayed_dates[cnt+1]
+      cnt += 1
+    end
+  end
+end
